@@ -48,13 +48,13 @@ if (length(args)==0){
 ########################################################################################
 ########################################################################################
 
+#The core Metropolis within Gibbs algorithm is written in this file
 source("BLR_metropolis_within_gibbs.R")
 #################################################
 # Set up the specifications:
 beta.0 <- c(0,0)
 p <- 2
 Sigma.0.inv <- diag(rep(1.0,p))
-niter <- 10000
 # etc... (more needed here)
 #################################################
 
@@ -76,7 +76,7 @@ beta.chain <- bayes.logreg(m = m,y = y,X  = X,
 # Extract posterior quantiles...
 posterior.quantiles <- apply(beta.chain , MARGIN = 2, FUN = quantile, 
                              probs = seq(from = 0.01, to = 0.99, by = 0.01))
-
+posterior.quantiles
 # Write results to a (99 x p) csv file...
 result_data_file <- paste("results/blr_res_", sim_num, ".csv", sep = "")
 write.table(x = as.data.frame(posterior.quantiles), file = result_data_file, 
@@ -90,5 +90,8 @@ cat("done. :)\n")
 #library(MCMCpack)
 #mcmc.beta.chain <- mcmc(beta.chain)
 #plot(mcmc.beta.chain)
-#acf(mcmc.beta.chain)
+#
+autocorr.plot(mcmc.beta.chain)
+
+acf(mcmc.beta.chain)
 

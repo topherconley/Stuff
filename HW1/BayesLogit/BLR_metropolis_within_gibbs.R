@@ -1,4 +1,4 @@
-
+library(mvtnorm)
 
 log.posterior <- function(mu.0, Sigma.0.inv, beta, y, m, X) {  
   #key functions
@@ -62,10 +62,17 @@ check.proposal.var <-function(n.accept, n.iter.block , psd,
                            print.every=1000,retune=100,
                            verbose=TRUE){
   
+  #GLM aids in selecting priors
+  mod.glm <- glm( cbind(y, m -y) ~ . , data = as.data.frame(X[,-1]), family = binomial(link = "logit"))
   #prior mean on beta
-  mu.0 <- rep(0, times = length(beta.0))
+  mu.0 <- summary(mod.glm)$coefficients[,1]
   #proposal standard deviation (tuning parameter)
-  psd <- rep(1, times = length(beta.0))
+  psd <- summary(mod.glm)$coefficients[,2]
+
+  #naive priors
+  #mu.0 <- rep(0, times = length(beta.0))
+  #psd <- rep(0.5, times = length(beta.0))
+  
   #acceptance rate
   accept.count <- rep(0, times = length(beta.0))
   burnin.count <- rep(0, times = length(beta.0))
@@ -110,7 +117,15 @@ check.proposal.var <-function(n.accept, n.iter.block , psd,
         log.posterior(mu.0, Sigma.0.inv, beta.current, y, m, X)
       log.u <- log(runif(n = 1))
       acceptance <- log.u < log.alpha
-      if (acceptance) {
+      
+      #if(is.na(acceptance)) {
+        
+        #cat("Missing Value for acceptance at iteration:\t", t, "\n")
+        #cat("Proposal:\t", beta.prop, "\n")
+        #cat("log.alpha:\t", log.alpha, "\n")
+      #}
+      
+      if (!is.na(acceptance) & acceptance) {
         #update the current beta for all subsequent dimensions of beta
         beta.current[j] <- beta.prop
         #keep separate accceptance rates
@@ -131,5 +146,34 @@ check.proposal.var <-function(n.accept, n.iter.block , psd,
   
   print("Percent acceptance for each parameter:")
   print(round(100*accept.count/length(post.burnin.index), 3))  
+  print("Tuned Proposal Variance Values")
+  print(psd)
   return(beta.chain[post.burnin.index,])
 }
+
+post.predictive <- function(n.pred = 100, posterior, y, X, stat = mean) {
+  
+  n.post <- dim(posterior)[1]
+  
+  if(n.pred > n.post) {
+    stop("Predictive data sets must be less than posterior samples")
+  }
+  
+  pred.index <- sample(x = seq_len(n.post), size = n.pred)
+  beta.post <- posterior[pred.index,]
+  
+  n.y <- length(y)
+  sum.stats <- vector(mode  = "numeric", length = n.pred)
+  
+  expit <- function(x, beta) {
+    eEta <- exp( x %*% beta) 
+    eEta / (1 + eEta)
+  }
+  
+  for (j in seq_len(n.pred)) {
+    pred.data <- rbinom(n = n.y, size = 1, prob = expit(X,beta.post[j,]))
+    sum.stats[j] <- stat(pred.data)
+  } 
+  sum.stats
+}
+

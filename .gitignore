@@ -41,3 +41,6 @@ out_*
 *.vrb
 *.xdy
 *.tdo
+
+#stuff I added
+*.rda

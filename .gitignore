@@ -49,3 +49,7 @@ out_*
 
 #stuff I added
 *.rda
+private_key.pem
+HW2/BLB/blb_lin_reg_mini*
+HW2/BLB/output/
+HW2/BLB/final/

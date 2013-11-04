@@ -94,7 +94,7 @@ subset_s <- sample.int(n = n, size = b)
 dat_s <- dat[subset_s,]
 
 #data frame is convenient representation for lm() functionality
-df_s <- data.frame(y_s = data_s[,d + 1], X_s = dat_s[,seq_len(d)])
+df_s <- data.frame(y_s = dat_s[,d + 1], X_s = dat_s[,seq_len(d)])
 
 # Reset simulation seed:
 #each rth replication has a different resample of rows based on the multinomial

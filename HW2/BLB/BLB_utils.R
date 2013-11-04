@@ -24,3 +24,15 @@ sr_index <- function(jobnum, S, R) {
   c(s,r)
 }
 
+plot_blb_se <- function(result_file = "final/blb_lin_reg_data_s5_r50_SE.txt") {
+  blb_se <- read.table(file = result_file, header = TRUE)
+  #par(cex = 0.5)
+  plot(blb_se[,1], pch = 19, cex = 0.65, 
+       main = "Bag of Little Bootstraps: Linear Model Standard Errors",
+       ylab = "standard errors (beta)",
+       xlab = "Index of beta")
+  sm <- smooth.spline(x = seq_along(blb_se[,1]), blb_se[,1])
+  lines(sm$x, sm$y, col = "blue", lwd = 5)
+  abline(h = 0.01, col = "red", lwd = 3)
+}
+plot_blb_se()

@@ -35,4 +35,6 @@ plot_blb_se <- function(result_file = "final/blb_lin_reg_data_s5_r50_SE.txt") {
   lines(sm$x, sm$y, col = "blue", lwd = 5)
   abline(h = 0.01, col = "red", lwd = 3)
 }
-plot_blb_se()
+#pdf("blb_lin_reg_se.pdf")
+#plot_blb_se()
+#dev.off()

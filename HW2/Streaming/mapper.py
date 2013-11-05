@@ -6,7 +6,7 @@ import sys
 import math
 
 #the number of lines
-D = 5
+D = 4
 
 # input comes from STDIN (standard input)
 for line in sys.stdin:
@@ -37,9 +37,8 @@ for line in sys.stdin:
     # write the results to STDOUT (standard output);
     # what we output here will be the input for the
     # Reduce step, i.e. the input for reducer.py
-    #
-    #the trivial frequency is 1
-    out_line[D - 1] = 1
-
-    #FROM: http://stackoverflow.com/questions/5445970/printing-list-in-python-properly
-    print '%s' % '\t'.join(map(str, out_line))
+    trivial_freq = "1"
+    #IMPORTANT: <key, value>  pair must be delimited by a tab (\t) character
+    key = ','.join(map(str, out_line))
+    value = "\t{0}".format(trivial_freq)
+    print  key + value

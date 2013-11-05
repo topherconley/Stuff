@@ -53,3 +53,6 @@ private_key.pem
 HW2/BLB/blb_lin_reg_mini*
 HW2/BLB/output/
 HW2/BLB/final/
+HW2/Streaming/binned-output/
+HW2/Streaming/full_results.txt
+HW2/Streaming/topher_aws_ec2.pem

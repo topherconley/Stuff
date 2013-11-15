@@ -1,0 +1,75 @@
+
+# =============Login into AWS================================ #
+ssh -i topher_aws_ec2.pem  hadoop@[dns name ]
+
+#================= Copy data to Hadoop ======================#
+#for testing
+hadoop fs -mkdir data
+hadoop distcp s3://sta250bucket/mini_groups.txt data/
+hadoop fs -ls data/
+
+#for final data
+hadoop fs -mkdir data
+hadoop distcp s3://sta250bucket/groups.txt data/
+hadoop fs -ls data/
+
+# =============Launch Hive environment================================ #
+hive
+
+#avoid great pain, kind of cryptic
+set hive.base.inputformat=org.apache.hadoop.hive.ql.io.HiveInputFormat;
+set mapred.min.split.size=134217728;
+
+# =================Load data into Hive============================ #
+
+#IDEA 1: Create a dummy table to be overwritten by external file 
+#source: https://cwiki.apache.org/confluence/display/Hive/LanguageManual+DML#LanguageManualDML-Loadingfilesintotables
+
+#create table to be overwritten
+CREATE TABLE groups (
+ firstname STRING,
+  lastname STRING,
+   statphd BOOLEAN,
+    hwscore INT
+);
+#make sure "groups" table was created
+SHOW TABLES;
+#overwrite the "groups" table with the corresponding data file
+LOAD DATA INPATH '/user/hadoop/data/mini_groups.txt' OVERWRITE INTO TABLE groups; 
+#To list columns and column types of table.
+DESCRIBE EXTENDED groups;
+
+#DID NOT WORK
+#IDEA 2: Skip the dummy table and try to load up the file directly when the 
+#already has table structure.
+#source: https://cwiki.apache.org/confluence/display/Hive/Tutorial#Tutorial-LoadingData
+LOAD DATA INPATH '/user/hadoop/data/mini_groups.txt' INTO TABLE groups 
+#To list columns and column types of table.
+DESCRIBE EXTENDED groups;
+
+# =================Compute within-group means, variances============================ #
+#EXAMPLE
+#
+#    SELECT column_name, aggregate_function(column_name)
+#    FROM table_name
+#    WHERE column_name operator value
+#    GROUP BY column_name;
+
+
+#RESOURCE FOR User Defined Functions (UDF) 
+#https://cwiki.apache.org/confluence/display/Hive/LanguageManual+UDF
+
+SELECT *, avg(*)
+    FROM table_of_groups 
+    GROUP BY column_name_containing_group_id;
+
+
+SELECT *, var_samp(*)
+    FROM table_of_groups 
+    GROUP BY column_name_containing_group_id;
+
+# =================Write results to file============================ #
+#on local system
+mkdir output
+INSERT OVERWRITE LOCAL DIRECTORY output SELECT ... FROM ...
+

@@ -1,44 +1,39 @@
 #!/usr/bin/env python
 
-# From: http://www.michael-noll.com/tutorials/writing-an-hadoop-mapreduce-program-in-python/
-
+# From: http://www.michael-noll.com/tutorials/...
+#writing-an-hadoop-mapreduce-program-in-python/
 import sys
 import math
-
 #the number of lines
 D = 4
-
 # input comes from STDIN (standard input)
 for line in sys.stdin:
     # remove leading and trailing whitespace
     line = line.strip()
     # split the line which should be a pair of numbers (x_1, x_2)
     x_d = line.split()
-
     #keep pairs on same line counters
     out_line = [None]*D
     d = 0
     for x in x_d:
         x = float(x)
-
         #boundary precision to the tenths decimal place
         x_lo = math.floor(x*10)/10
         x_hi = math.ceil(x*10)/10
-
-        #values lying on the boundary should follow left exclusion principle
+        #values lying on the boundary should
+        #follow left exclusion principle
         #(e.g. 5.4 < x <= 5.5) when x = 5.5
         if x_lo == x_hi:
             x_lo = x_hi - 0.1
-
         out_line[d] = x_lo
         out_line[d + 1] = x_hi
         d += 2
-
     # write the results to STDOUT (standard output);
     # what we output here will be the input for the
     # Reduce step, i.e. the input for reducer.py
     trivial_freq = "1"
-    #IMPORTANT: <key, value>  pair must be delimited by a tab (\t) character
+    #delimit the boundaries with a  comma.
     key = ','.join(map(str, out_line))
+    # <key, value>  pair must be delimited by a tab (\t) character
     value = "\t{0}".format(trivial_freq)
     print  key + value

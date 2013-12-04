@@ -48,3 +48,14 @@ source("newton-raphson.r")
 lambdaNR <- newtonRaphson(g = logLikPrime, gprime  = logLikDoublePrime, 
                           xInit = 0.5, epsilon = epsilon, maxIter)
 lambdaNR
+
+pdf("log-lik-mle.pdf")
+par(mfrow = c(1,2))
+plot(support, logLik(support), type = 'l', lwd = 3,
+     main = "Finding MLE of the Log Lik.", xlab = "theta")
+abline(v = lambdaBisection, col = "red", lwd = 3)
+
+plot(support, logLik(support), type = 'l', lwd = 3,
+     main = "Finding MLE of the Log Lik.", xlab = "theta")
+abline(v = lambdaNR, col = "blue", lwd = 3)
+dev.off()

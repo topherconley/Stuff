@@ -1,5 +1,5 @@
 
-newtonRaphson <- function(g, gprime, xInit, epsilon, maxIter) {
+newtonRaphson <- function(g, gprime, xInit, epsilon, maxIter, verbose = FALSE) {
   
   #constraints on the parameters
   stopifnot(is.function(g),
@@ -15,10 +15,14 @@ newtonRaphson <- function(g, gprime, xInit, epsilon, maxIter) {
   #initalize key variables
   x <- xInit
   converged <- FALSE
-  iterCount <- 1
+  iterCount <- 0
   
   while(!converged && iterCount < maxIter) {  
     
+    if (verbose == TRUE) {
+      cat("iteration: ", iterCount, "\n");
+      cat("root (current): ", x, "\n");
+    }
     iterCount <- iterCount + 1
     
     if ( abs(g(x))< epsilon ) {

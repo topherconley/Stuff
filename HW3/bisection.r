@@ -1,6 +1,6 @@
 
 
-bisection <- function(a, b, g, epsilon, maxIter) {
+bisection <- function(a, b, g, epsilon, maxIter, verbose = FALSE) {
   
   #constraints on the paramters
   stopifnot(g(a) * g(b) < 0, 
@@ -13,9 +13,16 @@ bisection <- function(a, b, g, epsilon, maxIter) {
   lower <- a
   upper <- b
   converged <- FALSE
-  iterCount <- 1 
+  iterCount <- 0 
   
   while (!converged && iterCount < maxIter) {
+    
+    
+    if (verbose == TRUE) {
+      cat("iteration: ", iterCount, "\n");
+      cat("root (current): ", center, "\n");
+    }
+    
     iterCount <- iterCount + 1
     center <- (lower + upper) / 2
     if ( abs(g(center)) < epsilon) {

@@ -1,0 +1,219 @@
+
+R version 3.0.1 (2013-05-16) -- "Good Sport"
+Copyright (C) 2013 The R Foundation for Statistical Computing
+Platform: x86_64-redhat-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+[Previously saved workspace restored]
+
+> rm(list = ls())
+> source("rtruncnorm_cpu.r")
+> library(Rcpp)
+> sourceCpp("rtruncnorm_cpu.cpp")
+> 
+> ############################################################################
+> #expected value of right truncation on (-Inf, b)
+> Eright <- function(mu, sigma, b) {
++     stopifnot(is.finite(b))
++     z_b <- (b - mu) / sigma 
++     mu - sigma * ( dnorm(z_b) / pnorm(z_b) )
++ }
+> 
+> #expected value of left truncation on (a, Inf)
+> Eleft <- function(mu, sigma, a) {
++     stopifnot(is.finite(a))
++     z_a <- (a - mu) / sigma 
++     mu + sigma * ( dnorm(z_a) / (1 -  pnorm(z_a) ) ) 
++ }
+> 
+> #expected value of two-sided truncation on (a, b)
+> Edouble <- function(mu, sigma, a, b) {
++     z_a <- (a - mu) / sigma 
++     z_b <- (b - mu) / sigma 
++     numer <- dnorm(z_a) - dnorm(z_b)
++     denom <- pnorm(z_b) - pnorm(z_a)
++     mu + sigma * ( numer / denom )
++ }
+> 
+> #key parameters to simulation
+> max_tries_r <- 25L
+> N <- 1e4L
+> mu <- rep(2,N)
+> sd <- rep(1,N)
+> 
+> ############################################################################
+> #plot the sampled output to graphically verify
+> #cpu
+> verify_rtruncnorm_cpu <- function(mu, sd, lo, hi, max_tries_r, test_type,
++                                   theoretical_value, xlimits) {
++     x <- rtruncnorm_cpu_rcpp(N, mu, sd, lo, hi, max_tries_r)
++     #pdf(test_type)
++     dx <- density(x)
++     plot(density(rnorm(n = N, mean = mu, sd = sd)), type = 'l', 
++          ylim = c(0, max(dx$y)),
++          xlim = xlimits,
++          main = test_type)
++     lines(dx, col = "red")
++     abline(v = theoretical_value, col = "blue", lwd = 2)
++     abline(v = median(x), col = "red", lwd = 2)
++     #dev.off()
++ }
+> 
+> #Set up the rcuda environment and corresponding functions
+> source("launch_rcuda_env.r")
+
+Attaching package: ‘RCUDA’
+
+The following object is masked from ‘package:Rcpp’:
+
+    loadModule
+
+The following object is masked from ‘package:methods’:
+
+    getFunction
+
+Setting cuGetContext(TRUE)...
+done. Profiling CUDA code...
+Loading module...
+done. Extracting kernel...
+Warning messages:
+1: replacing previous import ‘coerce’ when loading ‘RAutoGenRunTime’ 
+2: replacing previous import ‘show’ when loading ‘RAutoGenRunTime’ 
+> 
+> #both cpu & gpu together
+> verify_rtruncnorm <- function(mu, sd, lo, hi, max_tries_r, test_type,
++                                   theoretical_value, xlimits) {
++ 
++   cpu_x <- rtruncnorm_cpu_rcpp(N, mu, sd, lo, hi, max_tries_r)
++   gpu_x <- rtruncnorm_gpu(kernel, x = runif(N), N, mu, sd, lo, hi, 
++                           compute_grid(N))
++   
++   plot_trunc <- function(x, hardware) {
++     dx <- density(x)
++     plot(density(rnorm(n = N, mean = mu, sd = sd)), type = 'l', 
++          ylim = c(0, max(dx$y)),
++          xlim = xlimits,
++          main = paste(hardware, test_type))
++     lines(dx, col = "red")
++     abline(v = theoretical_value, col = "blue", lwd = 2)
++     abline(v = median(x), col = "red", lwd = 2)
++     cat("median of sample:\t", median(x), "\t expected value:\t", theoretical_value, "\n");
++   }
++ 
++   
++   pdf(paste0(test_type, ".pdf"))
++   par(mfrow = c(1,2))
++   #cpu
++   set.seed(34)
++   plot_trunc(cpu_x, "CPU")
++   set.seed(34)
++   plot_trunc(gpu_x, "GPU")
++   dev.off()
++ }
+> 
+> ############################################################################
+> 
+> #double truncation
+> lo <- rep(0,N)
+> hi <- rep(1.5, N)
+> verify_rtruncnorm(mu, sd, lo, hi, 
++                   max_tries_r, "double_trunc",
++                   Edouble(mu[1], sd[1], lo[1], hi[1]),
++                   c(-3,6))
+median of sample:	 1.025399 	 expected value:	 0.9570067 
+median of sample:	 1.035505 	 expected value:	 0.9570067 
+null device 
+          1 
+> 
+> #right truncation
+> lo <- rep(-Inf,N)
+> hi <- rep(-3,N)
+> verify_rtruncnorm(mu, sd, lo, hi, 
++                   max_tries_r, "right_trunc",
++                   Eright(mu[1], sd[1], hi[1]), 
++                   c(-4, 6))
+median of sample:	 -3.129094 	 expected value:	 -3.186504 
+median of sample:	 -3.13183 	 expected value:	 -3.186504 
+null device 
+          1 
+> 
+> #extreme right truncation
+> lo <- rep(-Inf,N)
+> hi <- rep(-7,N)
+> verify_rtruncnorm(mu, sd, lo, hi, 
++                   max_tries_r, "extreme_right_trunc",
++                   Eright(mu[1], sd[1], hi[1]), 
++                   c(-8, -6.8))
+median of sample:	 -7.075001 	 expected value:	 -7.108523 
+median of sample:	 -7.075756 	 expected value:	 -7.108523 
+null device 
+          1 
+> 
+> #left truncation
+> lo <- rep(5,N) 
+> hi <- rep(Inf,N) 
+> verify_rtruncnorm(mu, sd, lo, hi, 
++                   max_tries_r, "left_trunc",
++                   Eleft(mu[1], sd[1], lo[1]), 
++                   c(-1.5, 6.5))
+median of sample:	 5.207818 	 expected value:	 5.283099 
+median of sample:	 5.209829 	 expected value:	 5.283099 
+null device 
+          1 
+> 
+> #extreme left truncation
+> lo <- rep(7,N) 
+> hi <- rep(Inf,N) 
+> verify_rtruncnorm(mu, sd, lo, hi, 
++                   max_tries_r, "extreme_left_trunc",
++                   Eleft(mu[1], sd[1], lo[1]), 
++                   c(-1.5, 8.5))
+median of sample:	 7.129094 	 expected value:	 7.186504 
+median of sample:	 7.131956 	 expected value:	 7.186504 
+null device 
+          1 
+> 
+> #No truncation
+> lo <- rep(-Inf,N)
+> hi <- rep(Inf,N)
+> verify_rtruncnorm(mu, sd, lo, hi, 
++                   max_tries_r, "no_trunc",
++                   Edouble(mu[1], sd[1], lo[1], hi[1]), 
++                   c(-2, 6))
+median of sample:	 2.008967 	 expected value:	 2 
+median of sample:	 1.998455 	 expected value:	 2 
+null device 
+          1 
+> 
+> #left truncation different scale
+> lo <- rep(7,N)
+> hi <- rep(Inf,N)
+> sd <- rep(2, N)
+> verify_rtruncnorm(mu, sd, lo, hi, 
++                   max_tries_r, "change_scale",
++                   Edouble(mu[1], sd[1], lo[1], hi[1]), 
++                   c(-6, 13))
+median of sample:	 7.480974 	 expected value:	 7.64549 
+median of sample:	 7.468181 	 expected value:	 7.64549 
+null device 
+          1 
+> 
+> 
+> 
+> 
+> proc.time()
+   user  system elapsed 
+  3.648   0.408   4.103 

@@ -1,19 +1,29 @@
 rm(list = ls())
 source("probit_mcmc.r")
-
 ##############
 # RUN THE MCMC
-cat("******************data chunk 01******************************\n")
+
+datfile <- "data_01.txt"
+parfile <- "pars_01.txt"
+niter <- 2e3
+burnin <- 5e2
+
 #CPU
-beta_mcmc_cpu <- run_mcmc(data = read.table("data_01.txt", header = TRUE), 
-                          niter = 2e3, burnin = 5e2, GPU = FALSE)
-validate_mcmc(beta_mcmc_cpu, "mini_pars.txt")
+system.time({
+beta_mcmc_cpu <- run_mcmc(data = read.table(datfile, header = TRUE), 
+                      niter, burnin, GPU = FALSE)
+})
+validate_mcmc(beta_mcmc_cpu, parfile)
+
 #GPU
-beta_mcmc_gpu <- run_mcmc(data = read.table("data_01.txt", header = TRUE), 
-                          niter = 2e3, burnin = 5e2, GPU = TRUE)
-validate_mcmc(beta_mcmc_gpu, "mini_pars.txt")
+system.time({
+beta_mcmc_gpu <- run_mcmc(data = read.table(datfile, header = TRUE), 
+                      niter, burnin, GPU = TRUE)
+})
+validate_mcmc(beta_mcmc_gpu, parfile, plot.trace = TRUE)
 
 #save(list = ls(all = TRUE), file = "mini_out.rda")
 #load("mini_out.rda")
+
 
 

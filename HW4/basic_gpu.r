@@ -15,7 +15,7 @@ bg <- compute_grid(N);
 stopifnot(is.integer(N))
 max_tries = 2000L
 rng_a = 5L; rng_b = 11L; rng_c = 17L;
-x <- rnorm(N)
+x <- runif(N)
 mu <- rep(2,N)
 sigma <- rep(1,N)
 lo <- rep(0,N);
@@ -30,5 +30,5 @@ mem = copyToDevice(x)
       rng_a, rng_b, rng_c,
       gridDim = bg$grid_dims, blockDim = bg$block_dims)
 #cat("Copying result back from device...\n")
-copyFromDevice(obj=mem,nels=mem@nels,type="float")
+cu_ret <- copyFromDevice(obj=mem,nels=mem@nels,type="float")
 

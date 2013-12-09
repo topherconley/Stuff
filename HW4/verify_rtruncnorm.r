@@ -1,5 +1,4 @@
 rm(list = ls())
-setwd("~/myrepos/sta250/Stuff/HW4/")
 source("rtruncnorm_cpu.r")
 library(Rcpp)
 sourceCpp("rtruncnorm_cpu.cpp")
@@ -61,7 +60,7 @@ verify_rtruncnorm <- function(mu, sd, lo, hi, max_tries_r, test_type,
 
   cpu_x <- rtruncnorm_cpu_rcpp(N, mu, sd, lo, hi, max_tries_r)
   gpu_x <- rtruncnorm_gpu(kernel, x = runif(N), N, mu, sd, lo, hi, 
-                          computed_grid(N))
+                          compute_grid(N))
   
   plot_trunc <- function(x, hardware) {
     dx <- density(x)
@@ -72,9 +71,11 @@ verify_rtruncnorm <- function(mu, sd, lo, hi, max_tries_r, test_type,
     lines(dx, col = "red")
     abline(v = theoretical_value, col = "blue", lwd = 2)
     abline(v = median(x), col = "red", lwd = 2)
+    cat("median of sample:\t", median(x), "\t expected value:\t", theoretical_value, "\n");
   }
+
   
-  pdf(test_type)
+  pdf(paste0(test_type, ".pdf"))
   par(mfrow = c(1,2))
   #cpu
   set.seed(34)
@@ -90,7 +91,7 @@ verify_rtruncnorm <- function(mu, sd, lo, hi, max_tries_r, test_type,
 lo <- rep(0,N)
 hi <- rep(1.5, N)
 verify_rtruncnorm(mu, sd, lo, hi, 
-                  max_tries_r, "double truncation",
+                  max_tries_r, "double_trunc",
                   Edouble(mu[1], sd[1], lo[1], hi[1]),
                   c(-3,6))
 
@@ -98,7 +99,7 @@ verify_rtruncnorm(mu, sd, lo, hi,
 lo <- rep(-Inf,N)
 hi <- rep(-3,N)
 verify_rtruncnorm(mu, sd, lo, hi, 
-                  max_tries_r, "right truncation",
+                  max_tries_r, "right_trunc",
                   Eright(mu[1], sd[1], hi[1]), 
                   c(-4, 6))
 
@@ -106,7 +107,7 @@ verify_rtruncnorm(mu, sd, lo, hi,
 lo <- rep(-Inf,N)
 hi <- rep(-7,N)
 verify_rtruncnorm(mu, sd, lo, hi, 
-                  max_tries_r, "extreme right truncation",
+                  max_tries_r, "extreme_right_trunc",
                   Eright(mu[1], sd[1], hi[1]), 
                   c(-8, -6.8))
 
@@ -114,7 +115,7 @@ verify_rtruncnorm(mu, sd, lo, hi,
 lo <- rep(5,N) 
 hi <- rep(Inf,N) 
 verify_rtruncnorm(mu, sd, lo, hi, 
-                  max_tries_r, "left truncation",
+                  max_tries_r, "left_trunc",
                   Eleft(mu[1], sd[1], lo[1]), 
                   c(-1.5, 6.5))
 
@@ -122,7 +123,7 @@ verify_rtruncnorm(mu, sd, lo, hi,
 lo <- rep(7,N) 
 hi <- rep(Inf,N) 
 verify_rtruncnorm(mu, sd, lo, hi, 
-                  max_tries_r, "extreme left truncation",
+                  max_tries_r, "extreme_left_trunc",
                   Eleft(mu[1], sd[1], lo[1]), 
                   c(-1.5, 8.5))
 
@@ -130,8 +131,18 @@ verify_rtruncnorm(mu, sd, lo, hi,
 lo <- rep(-Inf,N)
 hi <- rep(Inf,N)
 verify_rtruncnorm(mu, sd, lo, hi, 
-                  max_tries_r, "no truncation",
+                  max_tries_r, "no_trunc",
                   Edouble(mu[1], sd[1], lo[1], hi[1]), 
                   c(-2, 6))
+
+#left truncation different scale
+lo <- rep(7,N)
+hi <- rep(Inf,N)
+sd <- rep(2, N)
+verify_rtruncnorm(mu, sd, lo, hi, 
+                  max_tries_r, "change_scale",
+                  Edouble(mu[1], sd[1], lo[1], hi[1]), 
+                  c(-6, 13))
+
 
 

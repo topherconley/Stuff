@@ -1,0 +1,108 @@
+
+R version 3.0.1 (2013-05-16) -- "Good Sport"
+Copyright (C) 2013 The R Foundation for Statistical Computing
+Platform: x86_64-redhat-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+[Previously saved workspace restored]
+
+> rm(list = ls())
+> source("probit_mcmc.r")
+> ##############
+> # RUN THE MCMC
+> 
+> datfile <- "data_02.txt"
+> parfile <- "pars_02.txt"
+> niter <- 2e3
+> burnin <- 5e2
+> 
+> #CPU
+> system.time({
++ beta_mcmc_cpu <- run_mcmc(data = read.table(datfile, header = TRUE), 
++                       niter, burnin, GPU = FALSE)
++ })
+Loading required package: lattice
+   user  system elapsed 
+  8.488   0.124   8.612 
+> validate_mcmc(beta_mcmc_cpu, parfile)
+% latex table generated in R 3.0.1 by xtable 1.7-1 package
+% Sun Dec  8 11:28:33 2013
+\begin{table}[ht]
+\centering
+\begin{tabular}{rrrrrrrrr}
+  \hline
+ & var1 & var2 & var3 & var4 & var5 & var6 & var7 & var8 \\ 
+  \hline
+1\% & 0.070 & 0.095 & -0.625 & 0.075 & 1.051 & 0.234 & 0.457 & -0.486 \\ 
+  99\% & 0.144 & 0.172 & -0.545 & 0.145 & 1.155 & 0.316 & 0.542 & -0.409 \\ 
+  post.beta & 0.106 & 0.133 & -0.584 & 0.109 & 1.104 & 0.278 & 0.496 & -0.446 \\ 
+  true.beta & 0.090 & 0.165 & -0.583 & 0.120 & 1.099 & 0.273 & 0.481 & -0.439 \\ 
+   \hline
+\end{tabular}
+\end{table}
+> 
+> #GPU
+> system.time({
++ beta_mcmc_gpu <- run_mcmc(data = read.table(datfile, header = TRUE), 
++                       niter, burnin, GPU = TRUE)
++ })
+Launching GPU Kernel
+
+Attaching package: ‘RCUDA’
+
+The following object is masked from ‘package:Rcpp’:
+
+    loadModule
+
+The following object is masked from ‘package:methods’:
+
+    getFunction
+
+Setting cuGetContext(TRUE)...
+done. Profiling CUDA code...
+Loading module...
+done. Extracting kernel...
+   user  system elapsed 
+178.995   1.276 180.316 
+Warning messages:
+1: replacing previous import ‘coerce’ when loading ‘RAutoGenRunTime’ 
+2: replacing previous import ‘show’ when loading ‘RAutoGenRunTime’ 
+> validate_mcmc(beta_mcmc_gpu, parfile, plot.trace = TRUE)
+% latex table generated in R 3.0.1 by xtable 1.7-1 package
+% Sun Dec  8 11:31:33 2013
+\begin{table}[ht]
+\centering
+\begin{tabular}{rrrrrrrrr}
+  \hline
+ & var1 & var2 & var3 & var4 & var5 & var6 & var7 & var8 \\ 
+  \hline
+1\% & 0.057 & 0.111 & -0.649 & 0.087 & 1.083 & 0.268 & 0.494 & -0.469 \\ 
+  99\% & 0.117 & 0.165 & -0.585 & 0.142 & 1.152 & 0.327 & 0.555 & -0.404 \\ 
+  post.beta & 0.087 & 0.137 & -0.617 & 0.114 & 1.120 & 0.299 & 0.524 & -0.438 \\ 
+  true.beta & 0.090 & 0.165 & -0.583 & 0.120 & 1.099 & 0.273 & 0.481 & -0.439 \\ 
+   \hline
+\end{tabular}
+\end{table}
+> 
+> #save(list = ls(all = TRUE), file = "mini_out.rda")
+> #load("mini_out.rda")
+> 
+> 
+> 
+> 
+> proc.time()
+   user  system elapsed 
+190.011   1.624 191.680 

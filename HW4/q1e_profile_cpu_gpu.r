@@ -37,7 +37,7 @@ if (!GPU) {
       lo <- rep(0,N)
       hi <- rep(1.5, N)
       rtruncnorm_gpu(kernel, x = runif(N), N, mu, sd, lo, hi, 
-                     computed_grid(N))  
+                     compute_grid(N))  
     })
   })
   

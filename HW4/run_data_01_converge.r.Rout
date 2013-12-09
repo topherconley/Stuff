@@ -1,0 +1,61 @@
+
+R version 3.0.1 (2013-05-16) -- "Good Sport"
+Copyright (C) 2013 The R Foundation for Statistical Computing
+Platform: x86_64-redhat-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+[Previously saved workspace restored]
+
+> rm(list = ls())
+> source("probit_mcmc.r")
+> ##############
+> # RUN THE MCMC
+> 
+> datfile <- "data_01.txt"
+> parfile <- "pars_01.txt"
+> niter <- 1e4
+> burnin <- 2e5
+> 
+> #CPU
+> system.time({
++ beta_mcmc_cpu <- run_mcmc(data = read.table(datfile, header = TRUE), 
++                       niter, burnin, GPU = FALSE)
++ })
+Loading required package: lattice
+   user  system elapsed 
+160.726   0.328 161.052 
+> validate_mcmc(beta_mcmc_cpu, parfile, plot.trace = TRUE)
+% latex table generated in R 3.0.1 by xtable 1.7-1 package
+% Mon Dec  9 07:43:41 2013
+\begin{table}[ht]
+\centering
+\begin{tabular}{rrrrrrrrr}
+  \hline
+ & var1 & var2 & var3 & var4 & var5 & var6 & var7 & var8 \\ 
+  \hline
+1\% & 0.013 & -1.249 & 0.182 & 1.820 & 1.404 & -1.260 & 2.136 & 0.646 \\ 
+  99\% & 0.364 & -0.781 & 0.554 & 2.578 & 2.042 & -0.783 & 2.914 & 1.090 \\ 
+  post.beta & 0.183 & -1.009 & 0.367 & 2.173 & 1.717 & -1.015 & 2.507 & 0.864 \\ 
+  true.beta & 0.140 & -0.973 & 0.308 & 1.868 & 1.486 & -0.948 & 2.416 & 0.803 \\ 
+   \hline
+\end{tabular}
+\end{table}
+> 
+> 
+> 
+> proc.time()
+   user  system elapsed 
+163.794   0.492 164.286 

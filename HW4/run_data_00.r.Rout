@@ -1,0 +1,72 @@
+
+R version 3.0.1 (2013-05-16) -- "Good Sport"
+Copyright (C) 2013 The R Foundation for Statistical Computing
+Platform: x86_64-redhat-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+[Previously saved workspace restored]
+
+> rm(list = ls())
+> source("probit_mcmc.r")
+> ##############
+> # RUN THE MCMC
+> 
+> datfile <- "mini_data.txt"
+> parfile <- "mini_pars.txt"
+> niter <- 5e4
+> burnin <-5e5 
+> 
+> #CPU
+> system.time({
++ beta_mcmc_cpu <- run_mcmc(data = read.table(datfile, header = TRUE), 
++                       niter, burnin, GPU = FALSE)
++ })
+Loading required package: lattice
+   user  system elapsed 
+327.392   0.588 327.970 
+> validate_mcmc(beta_mcmc_cpu, parfile, plot.trace = TRUE)
+% latex table generated in R 3.0.1 by xtable 1.7-1 package
+% Mon Dec  9 06:48:34 2013
+\begin{table}[ht]
+\centering
+\begin{tabular}{rrrrrrrrr}
+  \hline
+ & var1 & var2 & var3 & var4 & var5 & var6 & var7 & var8 \\ 
+  \hline
+1\% & 0.655 & -0.188 & -9.216 & -0.636 & 1.112 & -0.528 & 0.866 & -1.107 \\ 
+  99\% & 2.807 & 1.241 & -2.908 & 0.551 & 3.809 & 0.415 & 3.410 & 0.435 \\ 
+  post.beta & 1.564 & 0.482 & -5.295 & -0.029 & 2.179 & -0.044 & 1.936 & -0.291 \\ 
+  true.beta & 0.568 & -0.106 & -2.059 & 0.121 & 1.053 & -0.102 & 1.233 & -0.027 \\ 
+   \hline
+\end{tabular}
+\end{table}
+> 
+> #GPU
+> #system.time({
+> #beta_mcmc_gpu <- run_mcmc(data = read.table(datfile, header = TRUE), 
+> #                      niter = 2.5e3, burnin =5e2, GPU = TRUE)
+> #})
+> #validate_mcmc(beta_mcmc_gpu, parfile)
+> 
+> #save(list = ls(all = TRUE), file = "mini_out.rda")
+> #load("mini_out.rda")
+> 
+> 
+> 
+> 
+> proc.time()
+   user  system elapsed 
+332.464   0.836 333.292 

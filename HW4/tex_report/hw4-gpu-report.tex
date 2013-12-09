@@ -1,4 +1,4 @@
-\documentclass[11pt]{amsart}
+\documentclass[9pt]{amsart}
 \usepackage{geometry}                % See geometry.pdf to learn the layout options. There are lots.
 \geometry{letterpaper}                   % ... or a4paper or a5paper or ... 
 %\geometry{landscape}                % Activate for for rotated page geometry
@@ -223,6 +223,8 @@ We were able finish running the code on all data chunks (01-04) but not the last
 
 What is interesting about Figure \ref{fig:mcmc_profile} is that the performance between the two hardware configurations seem to differ by a constant in the Probit MCMC case. This is likely the cost of copying the result from the device back to the host, but we did not confirm this suspicion.  We speculate that the GPU code would begin to outperform the CPU in the Probit MCMC example when the number of truncated normal samples is on the order of $10^8$ and above. This conjecture is based on the first performance evaluation of question 1. 
 
+\newpage
+
 \section{Appendix A: Truncated Normal Sampler Code}
 
 \subsection{GPU Kernel}
@@ -234,14 +236,16 @@ This is virtually the same code as the GPU kernel, but written in Rcpp.
 \prettycode{cpu}{../rtruncnorm_cpu.cpp}
 
 
-
-\section{Appendix B: Validate Sampler}
+\section{Appendix B: Validate Sampler \& Profile Sampler}
 \subsection{Validate samplers}
+%%%%%%%% Insert  code %%%%%%%%%%%%%%%%%%%
 \prettycode{}{../verify_rtruncnorm.r}
-
-
+\subsection{Profile samplers}
+%%%%%%%% Insert  code %%%%%%%%%%%%%%%%%%%
+\prettycode{}{../q1e_profile_samplers.r}
 \section{Appendix C: Probit MCMC Code}
 \subsection{Probit MCMC}
+%%%%%%%% Insert  code %%%%%%%%%%%%%%%%%%%
 \prettycode{}{../probit_mcmc.r}
 
 
